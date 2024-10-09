@@ -1,22 +1,23 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Ref Finance API",
-    "description": "API for interacting with Ref Finance operations including token metadata retrieval and token swaps.",
+    "title": "Potlock API",
+    "description": "API for interacting with Potlock operations including project retrieval and creation.",
     "version": "1.0.0"
   },
   "servers": [
     {
-      "url": "https://ref-finance-agent.vercel.app"
+      "url": "https://potlock-project-creator.vercel.app"
     }
   ],
   "x-mb": {
-    "account-id": "mintbase.near",
+    "account-id": "whisper-laforge.near",
     "assistant": {
-      "name": "Ref Finance Assistant",
-      "description": "Assistant for using the Ref Finance API to swap tokens and retrieve token metadata.",
-      "instructions": "You are an assistant that helps users interact with Ref Finance. You can generate swap transactions and retrieve token metadata. Generated swap transactions can be presented to the user for signing and broadcasting to the network.",
+      "name": "Potlock Assistant",
+      "description": "Assistant for using the Potlock API to create projects and retrieve project data.",
+      "instructions": "You are an assistant that helps users interact with Potlock. You can generate register project transactions and retrieve project data. Generated transactions can be presented to the user for signing and broadcasting to the network.",
       "tools": [
+        { "type": "submit-query" },
         {
           "type": "generate-transaction"
         }
@@ -24,42 +25,36 @@
     }
   },
   "paths": {
-    "/api/{token}": {
+    "/api/project/{projectId}": {
       "get": {
-        "description": "Fetch metadata for a specific token using fuzzy search by name, symbol, or identifier.",
-        "operationId": "getTokenMetadata",
+        "description": "Fetch data for a specific project by identifier.",
+        "operationId": "getProjectData",
         "parameters": [
           {
             "in": "path",
-            "name": "token",
+            "name": "projectId",
             "required": true,
             "schema": {
               "type": "string"
             },
-            "description": "The name, symbol, or identifier of the token to search for and retrieve metadata."
+            "description": "The identifier of the project to retrieve data for."
           }
         ],
         "responses": {
           "200": {
-            "description": "Token metadata retrieved successfully.",
+            "description": "Project data retrieved successfully.",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "symbol": {
-                      "type": "string"
-                    },
-                    "decimals": {
-                      "type": "integer"
-                    },
                     "id": {
                       "type": "string"
                     },
-                    "spec": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "description": {
                       "type": "string"
                     },
                     "icon": {
@@ -68,51 +63,46 @@
                       "description": "Base64 encoded image data for the token icon."
                     }
                   },
-                  "required": ["name", "symbol", "decimals", "id", "spec", "icon"]
+                  "required": ["id", "name", "description"]
                 }
               }
             }
+          },
+          "404": {
+            "description": "Project not found."
           }
         }
       }
     },
-    "/api/swap/{tokenIn}/{tokenOut}/{quantity}": {
-      "get": {
-        "summary": "Get swap transactions",
-        "description": "An array of transaction objects necessary to execute the swap, including any required preliminary actions like storage deposits.",
-        "operationId": "getSwapTransactions",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "tokenIn",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "The name, symbol, or identifier of the token to input in the swap."
-          },
-          {
-            "in": "path",
-            "name": "tokenOut",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "The name, symbol, or identifier of the token to output in the swap."
-          },
-          {
-            "in": "path",
-            "name": "quantity",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "The amount of the input token to swap."
+    "/api/project/create": {
+      "post": {
+        "summary": "Create a new project",
+        "description": "Create a new project by providing the project name and description.",
+        "operationId": "createProject",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "The name of the project to be created."
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "A brief description of the project."
+                  }
+                },
+                "required": ["name", "description"]
+              }
+            }
           }
-        ],
+        },
         "responses": {
           "200": {
-            "description": "Swap transactions generated successfully.",
+            "description": "Project transactions generated successfully.",
             "content": {
               "application/json": {
                 "schema": {
@@ -120,9 +110,17 @@
                   "items": {
                     "type": "object",
                     "properties": {
-                      "receiverId": {
+                      "id": {
                         "type": "string",
-                        "description": "The account ID of the contract that will receive the transaction."
+                        "description": "The identifier of the newly created project."
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "The name of the newly created project."
+                      },
+                      "description": {
+                        "type": "string",
+                        "description": "The description of the newly created project."
                       },
                       "functionCalls": {
                         "type": "array",
@@ -151,7 +149,7 @@
                                 },
                                 "msg": {
                                   "type": "string",
-                                  "description": "A JSON string containing swap actions and parameters.  Shows minimum amount of tokens to receive."
+                                  "description": "A JSON string containing project actions and parameters."
                                 }
                               },
                               "additionalProperties": true
