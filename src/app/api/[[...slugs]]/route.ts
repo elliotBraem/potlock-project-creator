@@ -1,50 +1,63 @@
 import { swagger } from "@elysiajs/swagger";
-
+import { getMainnetRpcProvider, view } from '@near-js/client';
 import { Elysia } from "elysia";
+
+export enum RegistrationStatus {
+  Approved = "Approved",
+  Rejected = "Rejected",
+  Pending = "Pending",
+  Graylisted = "Graylisted",
+  Blacklisted = "Blacklisted",
+  Unregistered = "Unregistered",
+}
+export interface Registration {
+  id: string;
+  registrant_id: string;
+  list_id: number;
+  status: RegistrationStatus;
+  submitted_ms: number;
+  updated_ms: number;
+  admin_notes: null | string;
+  registrant_notes: null | string;
+  registered_by: string;
+}
 
 const app = new Elysia({ prefix: "/api", aot: false })
   .use(swagger())
   .get("/project/:projectId", async ({ params: { projectId } }) => {
-    // const projectMatch = searchProject(projectId)[0];
-    const projectMatch = {
-      id: "myproject.near",
-      name: "test",
-      description: "heyyyyyy"
-    };
-
-    async function getProjectData(projectId: string) {
-      return Promise.resolve(projectMatch);
+    try {
+      const registrations = await view<Registration[]>({
+        account: 'lists.potlock.near',
+        method: 'get_registrations_for_registrant',
+        args: {
+          registrant_id: projectId
+        },
+        deps: { rpcProvider: getMainnetRpcProvider() },
+      });
+      return registrations;
+    } catch (e: any) {
+      console.error(e);
+      return [];
     }
-
-    const data = await getProjectData(projectId);
-    // if (!projectMatch) {
-    //   return {
-    //     error: `Project ${projectId} not found`,
-    //   };
-    // }
-    // const tokenMetadata = await getProjectData(projectId.id); // get project data
-    // if (!tokenMetadata) {
-    //   return {
-    //     error: `Metadata for project ${projectId} not found`,
-    //   };
-    // }
-
-    return {
-      ...data,
-      icon: "",
-    };
   })
   .post("/project/create", async ({ headers }) => {
     const mbMetadata = JSON.parse(headers["mb-metadata"] || "{}");
     const accountId = mbMetadata?.accountData?.accountId || "near";
 
+
     return {
       id: "myproject.near",
       name: "test",
       description: "heyyyyyy",
-      functionCalls: {
-
-      }
+      functionCalls: [
+        {
+          methodName: "",
+          
+        },
+        {
+          methodName: ""
+        },
+      ]
     }
   })
   .compile();

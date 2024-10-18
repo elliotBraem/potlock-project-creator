@@ -46,24 +46,67 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string"
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "Unique identifier for the registration."
+                      },
+                      "registrant_id": {
+                        "type": "string",
+                        "description": "The identifier of the registrant."
+                      },
+                      "list_id": {
+                        "type": "integer",
+                        "description": "Identifier for the registration list."
+                      },
+                      "status": {
+                        "type": "string",
+                        "description": "Current registration status.",
+                        "enum": [
+                          "Approved",
+                          "Rejected",
+                          "Pending",
+                          "Graylisted",
+                          "Blacklisted",
+                          "Unregistered"
+                        ]
+                      },
+                      "submitted_ms": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Timestamp in milliseconds when the registration was submitted."
+                      },
+                      "updated_ms": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Timestamp in milliseconds when the registration was last updated."
+                      },
+                      "admin_notes": {
+                        "type": ["string", "null"],
+                        "description": "Optional notes added by the admin."
+                      },
+                      "registrant_notes": {
+                        "type": ["string", "null"],
+                        "description": "Optional notes added by the registrant."
+                      },
+                      "registered_by": {
+                        "type": "string",
+                        "description": "Identifier for the user or system that registered the entity."
+                      }
                     },
-                    "name": {
-                      "type": "string"
-                    },
-                    "description": {
-                      "type": "string"
-                    },
-                    "icon": {
-                      "type": "string",
-                      "format": "data-url",
-                      "description": "Base64 encoded image data for the token icon."
-                    }
-                  },
-                  "required": ["id", "name", "description"]
+                    "required": [
+                      "id",
+                      "registrant_id",
+                      "list_id",
+                      "status",
+                      "submitted_ms",
+                      "updated_ms",
+                      "registered_by"
+                    ]
+                  }
                 }
               }
             }
